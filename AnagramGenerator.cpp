@@ -54,7 +54,7 @@ bool ANAGRAM_GENERATOR::IsWordSpellable( const string& word, const vector<char>&
 		bool foundLetter = false;
 		for ( int j = 0; j < letters.size(); ++j )
 		{
-			// todo: if _InputLetters is sorted we can add a check here to bail out early
+			// todo: if letters is sorted we can add a check here to bail out early
 			if ( word.at(i) == letters[j] && !usedLetters[j] ) {
 				usedLetters[j] = true;
 				foundLetter = true;
@@ -76,6 +76,8 @@ static bool IsSpace( char c )
 
 void ANAGRAM_GENERATOR::FindSpellableWords( string input )
 {
+	cout << "\nFinding words spellable with input letters: ";
+
 	// clean up and save input as list of characters
 	//input.erase( remove_if( input.begin(), input.end(), IsSpace ), input.end() ); // remove any spaces
 	transform( input.begin(), input.end(), input.begin(), ::tolower ); // convert all characters to lowercase
@@ -84,11 +86,10 @@ void ANAGRAM_GENERATOR::FindSpellableWords( string input )
 	{
 		if ( input.at(i) >= 'a' && input.at(i) <= 'z' ) {
 			_InputLetters.push_back( input.at(i) );
-		}
-		
+			cout << input.at(i);
+		}	
 	}
-
-	cout << "\nFinding words spellable with input letters: " << input << "...\n";
+	cout << "\n";
 
 	for ( int i = 0; i < _Dictionary.size(); ++i ) 
 	{
@@ -99,10 +100,9 @@ void ANAGRAM_GENERATOR::FindSpellableWords( string input )
 	}
 
 	cout << "found " << _pSpellableWords.size() << " words\n";
-
 }
 
-void ANAGRAM_GENERATOR::FindAnagrams( 	const vector<char>& letters, // list letters that haven't been used yet
+void ANAGRAM_GENERATOR::FindAnagrams( 	const vector<char>& letters, // list of letters that haven't been used yet
 										const vector<string*>& words, // list of words we can spell with letters
 										vector<string*> sentence )	// the current anagram sentence
 {
@@ -118,48 +118,54 @@ void ANAGRAM_GENERATOR::FindAnagrams( 	const vector<char>& letters, // list lett
 		// add the word to the sentence 
 		newSentence.push_back( word );
 
-		// remove letters in word from list of remaining letters
-		for ( int l = 0; l < word->length(); ++l ) // for each letter in the word 
+		// remove letters in our word from list of remaining letters
+		for ( int l = 0; l < word->length(); ++l ) // for each letter in our word 
 		{
-			for ( vector<char>::iterator it = remainingLetters.begin(); it != remainingLetters.end(); ++it ) // for each letter in our list of letters
+			for ( vector<char>::iterator it = remainingLetters.begin(); it != remainingLetters.end(); ++it ) // for each letter in our list of remaining letters
 			{
-				// remove 
 				if ( word->at(l) == *it ) {
+					// remove the letter from our list of remaining letters
 					remainingLetters.erase( it );
 					break;
 				}
 			}
 		}
 
-		// remove words in word list we can no longer spell
-		for ( int x = 0; x < words.size(); ++x ) 
+		// determine which words we can still spell
+		for ( int i = 0; i < words.size(); ++i ) 
 		{
-			if ( IsWordSpellable( *words[x], remainingLetters ) ) {
-				remainingWords.push_back( words[x] );
+			if ( IsWordSpellable( *words[i], remainingLetters ) ) {
+				remainingWords.push_back( words[i] );
 			}
 		}
 
 		// if we're out of letters, add our finished sentence to the list of anagrams
 		if ( remainingLetters.empty() ) {
 			_Anagrams.push_back( newSentence );
-			for ( int i = 0; i < newSentence.size(); ++i ) {
-				cout << *newSentence[i] << " ";
-			}
-			cout << endl;
+			PrintAnagram( newSentence );
 		} else if ( !remainingWords.empty() ) { // if we still have words left, keep going
 			FindAnagrams( remainingLetters, remainingWords, newSentence );
 		}
+
+		// if we get here it means we have letters left but they don't spell anything.
+		// Let's ignore this cases for now and just say that anagrams have to use all the letters.
 	}		
 }
 
-void ANAGRAM_GENERATOR::GenerateAnagrams( string inputSentence ) 
+void ANAGRAM_GENERATOR::GenerateAnagrams( void ) 
 {
-	// populate our letter bank and list of spellable words
-	FindSpellableWords( inputSentence );
-
 	// populate list of anagram sentences
 	vector<string*> sentence;
 	FindAnagrams( _InputLetters, _pSpellableWords, sentence );
+}
+
+void ANAGRAM_GENERATOR::PrintAnagram( vector<string*> anagram ) const
+{
+	for ( int i = 0; i < anagram.size(); ++i )
+	{
+		cout << *anagram[i] << " ";
+	}
+	cout << "\n";
 }
 
 
@@ -169,11 +175,6 @@ void ANAGRAM_GENERATOR::PrintAnagrams( void ) const
 
 	for ( int i = 0; i < _Anagrams.size(); ++i )
 	{
-		for ( int j = 0; j < _Anagrams[i].size(); ++j )
-		{
-			cout << *_Anagrams[i][j] << " ";
-		}
-
-		cout << "\n";
+		PrintAnagram( _Anagrams[i] );
 	}
 }
