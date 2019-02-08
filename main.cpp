@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <iostream>
 #include <sstream>
+#include <string.h>
 
 using namespace std;
 
@@ -10,6 +11,29 @@ static const string DICTIONARY_FILENAME = "words50.txt";
 
 static const int MAX_WORD_LENGTH = 50;
 static const int MAX_INPUT_LENGTH = 100;
+
+enum COMMANDS 
+{
+	NONE,
+	INCLUDE,
+	UNINCLUDE,
+	IGNORE,
+	UNIGNORE,
+	GENERATE,
+	QUIT,
+};
+
+static COMMANDS CommandStringToEnum( string str )
+{
+	if ( str == "include" )		return INCLUDE;
+	if ( str == "uninclude" )	return UNINCLUDE;
+	if ( str == "ignore" )		return IGNORE;
+	if ( str == "unignore" )	return UNIGNORE;
+	if ( str == "generate" )	return GENERATE;
+	if ( str == "quit" )		return QUIT;
+
+	return NONE;
+}
 
 
 static vector<string> TokenizeInput( string input )
@@ -44,7 +68,7 @@ int main( int argc, char** argv )
 	// *** MAIN PROGRAM LOOP ***
 	while ( 1 ) 
 	{
-		cout << "\nEnter command:\n";
+		cout << "Enter command:\n";
 
 		memset( buffer, 0, MAX_INPUT_LENGTH );
 		cin.getline( buffer, MAX_INPUT_LENGTH );
@@ -55,59 +79,60 @@ int main( int argc, char** argv )
 			continue;
 		}
 
-		string command = tokens[0];
+		COMMANDS command = CommandStringToEnum( tokens[0] );
 		vector<string> args = tokens;
 		args.erase( args.begin() );
 
-		// TODO: Apparently you can't switch on a string in c++...gotta map commands to an enum or use if-else-if statements (gross)
+		switch ( command )
+		{
+		case INCLUDE: 
+			{
+				// include [word]		- add [word] to list of words we want included in the generated anagrams
+				for ( int i = 0; i < args.size(); ++i ) {
+					TheGenerator.AddIncludedWord( args[i] );
+				}
+			} break;
 
-		//switch ( command )
-		//{
-		//case "include": 
-		//	{
-		//		// include [word]		- add [word] to list of words we want included in the generated anagrams
-		//	} break;
+		case UNINCLUDE:
+			{
+				// uninclude [word]		- removes [word] from the list of words we want included in the generated anagrams
+				// uninclude -all		- removes all words from the list of words we want included in the generated anagrams
+			} break;
 
-		//case "uninclude":
-		//	{
-		//		// uninclude [word]		- removes [word] from the list of words we want included in the generated anagrams
-		//		// uninclude -all		- removes all words from the list of words we want included in the generated anagrams
-		//	} break;
+		case IGNORE:
+			{
+				// ignore [word]		- adds [word] to the list of words we DON'T want included in the generated anagrams
+				// ignore -all			- adds all words to the list of words we DON'T want included in the generated anagrams
+			} break;
 
-		//case "ignore":
-		//	{
-		//		// ignore [word]		- adds [word] to the list of words we DON'T want included in the generated anagrams
-		//		// ignore -all			- adds all words to the list of words we DON'T want included in the generated anagrams
-		//	} break;
+		case UNIGNORE:
+			{
+				// unignore [word]		- removes [word] from the list of words we DON'T want included in the generated anagrams
+				// unignore -all		- removes all words from the list of words we DON'T want included in the generated anagrams
+			} break;
 
-		//case "unignore":
-		//	{
-		//		// unignore [word]		- removes [word] from the list of words we DON'T want included in the generated anagrams
-		//		// unignore -all		- removes all words from the list of words we DON'T want included in the generated anagrams
-		//	} break;
+		case GENERATE:
+			{
+				// generate				- generates a list of anagram sentences that include the words in the included word list and do not include any words in the ignored word list
+			} break;
 
-		//case "generate":
-		//	{
-		//		// generate				- generates a list of anagram sentences that include the words in the included word list and do not include any words in the ignored word list
-		//	} break;
+		case QUIT:
+			{
+				// quit					- exits the program
+				if ( args.size() == 0 ) {
+					cout << "\nMischief Managed...\n\n";
+					return 0;
+				} else {
+					cout << "ERROR: Invalid number of args provided for command: quit\n";
+				}
+			} break;
 
-		//case "quit":
-		//	{
-		//		// quit					- exits the program
-		//		if ( args.size() == 0 ) {
-		//			cout << "\nMischief Managed...\n\n";
-		//		} else {
-		//			cout << "ERROR: Invalid number of args provided for command: quit\n";
-		//		}
-		//	} break;
-
-		//default:
-		//	{
-		//		cout << "ERROR: Unrecognized command\n";
-		//	} break;
-		//}
+		default:
+			{
+				cout << "ERROR: Unrecognized command\n";
+			} break;
+		}
 	}
-
 	
 	return 0;
 }
