@@ -25,50 +25,48 @@ public:
 
 class ANAGRAM_GENERATOR 
 {
-
-
 private:
 	std::vector<WORD>						_Dictionary;
 
 	std::vector<char>						_InputLetters;		// alphabetized list of letters from the input sentence	
 	std::vector<WORD*>						_SpellableWords;	// list of words that we can spell with _InputLetters
-
 	std::vector<WORD*>						_IncludedWords;		// list of words set by the user that will be included in the generated anagrams (if possible)
-
 	std::vector<std::vector<WORD*>>			_Anagrams;			// list of anagram sentences. Each anagram sentence stored as a list of ptrs to words.
 
-private:
-	bool ReadInDictionary( std::string filename );
 
-	// Recursive function that finds all possible anagram sentences that can be made using all letters. Once a full anagram is found, it is saved into the _Anagrams list.
-	void FindAnagrams(  const std::vector<char>&		letters, 
-						const std::vector<WORD*>& 		words, 
-						std::vector<WORD*> 				sentence 	);
+private:
+	/** Recursive function that finds all possible anagram sentences that can be made using all letters. Once a full anagram is found, it is saved into the _Anagrams list. */
+	void FindAnagrams(	const std::vector<char>&		letters,
+						const std::vector<WORD*>& 		words,
+						std::vector<WORD*> 				sentence );
 
 public:
-
-	ANAGRAM_GENERATOR( std::string dictionaryFilename );
+	bool ReadInDictionary( std::string filename );
 
 	void FindSpellableWords( std::string inputSentence );
 
 	void GenerateAnagrams( void );
-
-	void PrintAnagram( std::vector<WORD*> anagram ) const;
-
-	void PrintAnagrams( void ) const;
 	
-	void AddIncludedWord( std::string wordStr ); // Add word to the list of words we want included in the generated anagrams.
+	void AddIncludedWord( std::string wordStr );
 	
-	void RemoveIncludedWord( std::string wordStr ); // Remove word from the list of words we want included in the generated anagrams.
+	void RemoveIncludedWord( std::string wordStr );
 
-	void ClearIncludedWords( void ); // Clear list of included words
+	void ClearIncludedWords( void );
 
-	void IgnoreWord( std::string wordStr ); // Set a word to be ignored when generating anagrams
+	void IgnoreWord( std::string wordStr );
 
-	void UnIgnoreWord( std::string wordStr ); // Set a previously ignored word to be eligible again when generating anagrams
+	void UnIgnoreWord( std::string wordStr );
 
 	void IgnoreAllWords( void );
 
 	void UnIgnoreAllWords( void );
 
+public:
+	// Methods for printing shit 
+	void PrintSpellableWords( void ) const;
+	void PrintIncludedWords( void ) const;
+	void PrintIgnoredWords( void ) const;
+	void PrintAvailableWords( void ) const;
+	void PrintAnagram( std::vector<WORD*> anagram ) const;
+	void PrintAnagrams( void ) const;
 };
