@@ -397,6 +397,7 @@ static const int COLUMN_WIDTH = 15; // number of chars per column when printing 
 //					(if no function ptr is provided all words will be printed)
 static void PrintWordList( const vector<WORD*>& words, bool (*onlyPrintIfFunc)(const WORD*)=nullptr ) 
 {
+	int wordsPrinted = 0;
 	for ( int i = 0; i < words.size(); ++i )
 	{
 		if ( onlyPrintIfFunc != nullptr && !onlyPrintIfFunc( words[i] ) ) {
@@ -412,7 +413,7 @@ static void PrintWordList( const vector<WORD*>& words, bool (*onlyPrintIfFunc)(c
 		if ( words[i]->IsIgnored() ) charsPrinted += 2;
 
 		// print padding
-		if ( i % NUM_COLUMNS == NUM_COLUMNS-1 ) {
+		if ( wordsPrinted++ % NUM_COLUMNS == NUM_COLUMNS-1 ) {
 			cout << "\n"; // if it's the last word in the row just print a newline
 		} else {
 			if ( charsPrinted >= COLUMN_WIDTH ) {
