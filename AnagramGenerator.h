@@ -26,7 +26,7 @@ public:
 class ANAGRAM_GENERATOR 
 {
 private:
-	std::vector<WORD>						_Dictionary;
+	std::vector<WORD*>						_Dictionary;
 
 	std::vector<char>						_InputLetters;		// alphabetized list of letters from the input sentence	
 	std::vector<WORD*>						_SpellableWords;	// list of words that we can spell with _InputLetters
@@ -41,7 +41,9 @@ private:
 						std::vector<WORD*> 				sentence );
 
 public:
-	bool ReadInDictionary( std::string filename );
+	ANAGRAM_GENERATOR( std::string dictionaryFilename );
+
+	~ANAGRAM_GENERATOR( void );
 
 	void FindSpellableWords( std::string inputSentence );
 

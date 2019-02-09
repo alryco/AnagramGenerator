@@ -57,12 +57,7 @@ int main( int argc, char** argv )
 	cout << "\nTHIS IS ANAGRAM GENERATOR!\n\n";
 
 	// create our anagram generator object
-	ANAGRAM_GENERATOR TheGenerator;
-
-	if ( !TheGenerator.ReadInDictionary( DICTIONARY_FILENAME ) ) {
-		cout << "exiting...\n";
-		return 0;
-	}
+	ANAGRAM_GENERATOR TheGenerator( DICTIONARY_FILENAME );
 
 	// get input sentence from user
 	cout << "\nEnter sentence: \n";

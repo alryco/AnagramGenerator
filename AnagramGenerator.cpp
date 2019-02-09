@@ -11,13 +11,14 @@ static const int MAX_WORD_LENGTH = 50;
 
 
 //************************************************************************************
-bool ANAGRAM_GENERATOR::ReadInDictionary( string filename ) 
+ANAGRAM_GENERATOR::ANAGRAM_GENERATOR( string dictionaryFilename ) 
 {
-	ifstream inFile( filename );
+	ifstream inFile( dictionaryFilename );
 
+	// read in dictionary from file
 	if ( inFile.is_open() ) {
 
-		cout << "populating dictionary from file: " << filename << "\n";
+		cout << "populating dictionary from file: " << dictionaryFilename << "\n";
 
 		while ( !inFile.eof() ) 
 		{
@@ -29,20 +30,27 @@ bool ANAGRAM_GENERATOR::ReadInDictionary( string filename )
 			char buffer[MAX_WORD_LENGTH];
 			inFile.getline( buffer, MAX_WORD_LENGTH );
 			string str( buffer );
-			_Dictionary.push_back( WORD( str ) );
+			WORD* pWord = new WORD( str );
+			_Dictionary.push_back( pWord );
 		}
 
 		cout << "\ndictionary populated with " << _Dictionary.size() << " words\n";
 
-		return true;
-	}
+	} else {
 
-	cout << "failed to open dictionary file \'" << filename << "\'\n";
-	return false;
+		cout << "failed to open dictionary file \'" << dictionaryFilename << "\'\n";
+	}
 }
 
 
-
+//************************************************************************************
+ANAGRAM_GENERATOR::~ANAGRAM_GENERATOR( void )
+{
+	for ( int i = 0; i < _Dictionary.size(); ++i ) 
+	{
+		delete _Dictionary[i];
+	}
+}
 
 
 //************************************************************************************
@@ -72,8 +80,8 @@ void ANAGRAM_GENERATOR::FindSpellableWords( string input )
 
 	for ( int i = 0; i < _Dictionary.size(); ++i ) 
 	{
-		if ( _Dictionary[i].CanSpellWithLetters( _InputLetters ) ) {
-			_SpellableWords.push_back( &_Dictionary[i] );
+		if ( _Dictionary[i]->CanSpellWithLetters( _InputLetters ) ) {
+			_SpellableWords.push_back( _Dictionary[i] );
 		}
 
 		// print progress indicator
