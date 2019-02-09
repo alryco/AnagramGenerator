@@ -73,6 +73,7 @@ void ANAGRAM_GENERATOR::FindSpellableWords( string input )
 	{
 		if ( input.at(i) >= 'a' && input.at(i) <= 'z' ) {
 			_InputLetters.push_back( input.at(i) );
+			_AvailableLetters.push_back( input.at(i) );
 			cout << input.at(i);
 		}	
 	}
@@ -82,6 +83,7 @@ void ANAGRAM_GENERATOR::FindSpellableWords( string input )
 	{
 		if ( _Dictionary[i]->CanSpellWithLetters( _InputLetters ) ) {
 			_SpellableWords.push_back( _Dictionary[i] );
+			_AvailableWords.push_back( _Dictionary[i] );
 		}
 
 		// print progress indicator
@@ -117,17 +119,7 @@ void ANAGRAM_GENERATOR::FindAnagrams( 	const vector<char>& letters, // list of l
 		newSentence.push_back( word );
 
 		// remove letters in our word from list of remaining letters
-		for ( int l = 0; l < word->GetLength(); ++l ) // for each letter in our word 
-		{
-			for ( int m = 0; m < remainingLetters.size(); ++m ) // for each letter in our list of remaining letters
-			{
-				if ( word->GetCharAt(l) == remainingLetters[m] ) {
-					// remove the letter from our list of remaining letters
-					remainingLetters.erase( remainingLetters.begin() + m );
-					break;
-				}
-			}
-		}
+		RemoveLettersInWordFromList( word, remainingLetters );
 
 		// determine which words we can still spell
 		for ( int i = 0; i < words.size(); ++i ) 
@@ -152,6 +144,47 @@ void ANAGRAM_GENERATOR::FindAnagrams( 	const vector<char>& letters, // list of l
 
 
 //************************************************************************************
+bool ANAGRAM_GENERATOR::RemoveLettersInWordFromList( const WORD* word, vector<char>& letters )
+{
+	// save copy of original list of letters in case we can't find all of them
+	vector<char> originalLetters = letters;
+
+	// for each letter in word, find that letter in list of letters and remove it.
+	for ( int i = 0; i < word->GetLength(); ++i )
+	{
+		bool foundLetter = false;
+		for ( int j = 0; j < letters.size(); ++j )
+		{
+			if ( word->GetCharAt(i) == letters[j] ) {
+				// remove the letter from our list of remaining letters
+				letters.erase( letters.begin() + j );
+				foundLetter = true;
+				break;
+			}
+		}
+
+		// if we couldn't find a letter, add back any removed letters and return false
+		if ( !foundLetter ) {
+			letters = originalLetters;
+			return false;
+		}
+	}
+
+	return true;
+}
+
+
+//************************************************************************************
+void ANAGRAM_GENERATOR::AddLettersInWordToList( const WORD* word, vector<char>& letters )
+{
+	for ( int i = 0; i < word->GetLength(); ++i )
+	{
+		letters.push_back( word->GetCharAt(i) );
+	}
+}
+
+
+//************************************************************************************
 void ANAGRAM_GENERATOR::GenerateAnagrams( void ) 
 {
 	// clear out our list of anagrams
@@ -163,26 +196,9 @@ void ANAGRAM_GENERATOR::GenerateAnagrams( void )
 	vector<char> remainingLetters = _InputLetters;
 	for ( int s = 0; s < startingSentence.size(); ++s )
 	{
-		WORD* word = startingSentence[s];
-		for ( int l = 0; l < word->GetLength(); ++l )
-		{
-			bool foundLetter = false;
-			for ( int m = 0; m < remainingLetters.size(); ++m )
-			{
-				if ( word->GetCharAt( l ) == remainingLetters[m] ) {
-					// remove the letter from our list of remaining letters
-					remainingLetters.erase( remainingLetters.begin() + m );
-					foundLetter = true;
-					break;
-				}
-			}
-
-			// if we can't find the letter in our list of remaining letters, this combination of included words is not possible.
-			if ( !foundLetter ) {
-				cout << "This combination of included words cannot be spelled with the letters in the input sentence\n";
-				return;
-			}
-
+		if ( !RemoveLettersInWordFromList( startingSentence[s], remainingLetters ) ) {
+			cout << "This combination of included words cannot be spelled with the letters in the input sentence\n";
+			return;
 		}
 	}
 
@@ -233,24 +249,39 @@ void ANAGRAM_GENERATOR::AddIncludedWord( string wordStr )
 {
 	transform( wordStr.begin(), wordStr.end(), wordStr.begin(), ::tolower ); // convert all characters to lowercase
 
-	// find word in the list of spellable words
-	for ( int i = 0; i < _SpellableWords.size(); ++i ) 
+	// find word in the list of available words
+	for ( int i = 0; i < _AvailableWords.size(); ++i ) 
 	{
-		if ( wordStr == _SpellableWords[i]->GetString() ) {
-			_IncludedWords.push_back( _SpellableWords[i] );
+		if ( wordStr == _AvailableWords[i]->GetString() ) {
+
+			// add our word to the list of included words
+			_IncludedWords.push_back( _AvailableWords[i] );
 
 			// if ignore flag was previously set, clear it and notify the user
-			if ( _SpellableWords[i]->IsIgnored() ) { 
-				_SpellableWords[i]->SetIgnored( false );
+			if ( _AvailableWords[i]->IsIgnored() ) { 
+				_AvailableWords[i]->SetIgnored( false );
 				cout << "Removed \'" << wordStr << "\' from the list of ignored words\n";
 			}
 
-			cout << "Added \'" << wordStr << "\' to the list of included words\n";
+			// remove letters in word from list of available letters
+			RemoveLettersInWordFromList( _AvailableWords[i], _AvailableLetters );
+
+			// remove any words we can no longer spell from list of available words
+			for ( int w = 0; w < _AvailableWords.size(); ) 
+			{
+				if ( !_AvailableWords[w]->CanSpellWithLetters( _AvailableLetters ) ) {
+					_AvailableWords.erase( _AvailableWords.begin() + w );
+				} else {
+					++w;
+				}
+			}
+
+			cout << "Added \'" << wordStr << "\' to the list of included words (" << _AvailableWords.size() << " words remaining)\n";
 			return;
 		}
 	}
 
-	cout << "ERROR: \'" << wordStr << "\' not found in the list of spellable words\n";
+	cout << "ERROR: \'" << wordStr << "\' not found in the list of available words\n";
 }
 
 
@@ -262,7 +293,20 @@ void ANAGRAM_GENERATOR::RemoveIncludedWord( string wordStr )
 	for ( int i = 0; i < _IncludedWords.size(); ++i ) 
 	{
 		if ( wordStr == _IncludedWords[i]->GetString() ) {
+
+			// remove word from the list of included words 
 			_IncludedWords.erase( _IncludedWords.begin() + i );
+
+			// add letters in word back to list of remaining letters
+			AddLettersInWordToList( _IncludedWords[i], _AvailableLetters );
+
+			// update list of available words
+			_AvailableWords.clear();
+			for ( int w = 0; w < _SpellableWords.size(); ++w )
+			{
+				_AvailableWords.push_back( _SpellableWords[w] );
+			}
+
 			cout << "Removed \'" << wordStr << "\' from the list of included words\n";
 			return;
 		}
@@ -276,6 +320,8 @@ void ANAGRAM_GENERATOR::RemoveIncludedWord( string wordStr )
 void ANAGRAM_GENERATOR::ClearIncludedWords( void )
 {
 	_IncludedWords.clear();
+	_AvailableLetters = _InputLetters;
+	_AvailableWords = _SpellableWords;
 
 	cout << "Removed all words from the list of included words\n";
 }
@@ -358,17 +404,22 @@ static void PrintWordList( const vector<WORD*>& words, bool (*onlyPrintIfFunc)(c
 		}
 
 		// print word
+		if ( words[i]->IsIgnored() ) cout << "(";
 		cout << words[i]->GetString();
+		if ( words[i]->IsIgnored() ) cout << ")";
+
+		int charsPrinted = words[i]->GetLength();
+		if ( words[i]->IsIgnored() ) charsPrinted += 2;
 
 		// print padding
 		if ( i % NUM_COLUMNS == NUM_COLUMNS-1 ) {
 			cout << "\n"; // if it's the last word in the row just print a newline
 		} else {
-			if ( words[i]->GetLength() >= COLUMN_WIDTH ) {
+			if ( charsPrinted >= COLUMN_WIDTH ) {
 				cout << "\n"; // if word is longer than the column width just start a new row so we don't run into the next word
 			} else {
 				// print spaces to fill rest of column 
-				for ( int j = 0; j < COLUMN_WIDTH - words[i]->GetLength(); ++j ) {
+				for ( int j = 0; j < COLUMN_WIDTH - charsPrinted; ++j ) {
 					cout << " ";
 				}
 			}
@@ -417,11 +468,6 @@ void ANAGRAM_GENERATOR::PrintIgnoredWords( void ) const
 }
 
 
-static bool IsWordAvailable( const WORD* word )
-{
-	return !word->IsIgnored();
-}
-
 //************************************************************************************
 void ANAGRAM_GENERATOR::PrintAvailableWords( void ) const
 {
@@ -429,7 +475,7 @@ void ANAGRAM_GENERATOR::PrintAvailableWords( void ) const
 	cout << "Available Words:";
 	cout << "\n****************************************\n";
 
-	PrintWordList( _SpellableWords, IsWordAvailable );
+	PrintWordList( _AvailableWords );
 }
 
 

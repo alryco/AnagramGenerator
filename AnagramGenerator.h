@@ -30,15 +30,25 @@ private:
 
 	std::vector<char>						_InputLetters;		// alphabetized list of letters from the input sentence	
 	std::vector<WORD*>						_SpellableWords;	// list of words that we can spell with _InputLetters
-	std::vector<WORD*>						_IncludedWords;		// list of words set by the user that will be included in the generated anagrams (if possible)
-	std::vector<std::vector<WORD*>>			_Anagrams;			// list of anagram sentences. Each anagram sentence stored as a list of ptrs to words.
 
+	std::vector<WORD*>						_IncludedWords;		// list of words set by the user that will be included in the generated anagrams (if possible)
+	std::vector<char>						_AvailableLetters;	// list of input letters exluding all letters in the included words list
+	std::vector<WORD*>						_AvailableWords;	// list of words we can make using available letters
+
+	std::vector<std::vector<WORD*>>			_Anagrams;			// list of anagram sentences. Each anagram sentence stored as a list of ptrs to words.
 
 private:
 	/** Recursive function that finds all possible anagram sentences that can be made using all letters. Once a full anagram is found, it is saved into the _Anagrams list. */
 	void FindAnagrams(	const std::vector<char>&		letters,
 						const std::vector<WORD*>& 		words,
 						std::vector<WORD*> 				sentence );
+
+	/** Removes each letter in word from a list of letters returning true if successful.
+		If a letter does not exist in letters, function returns false and letters list is unmodified. */
+	bool RemoveLettersInWordFromList( const WORD* word, std::vector<char>& letters );
+
+	/** Adds each letter in word to a list of letters */
+	void AddLettersInWordToList( const WORD* word, std::vector<char>& letters );
 
 public:
 	ANAGRAM_GENERATOR( std::string dictionaryFilename );

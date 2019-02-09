@@ -52,6 +52,7 @@ static vector<string> TokenizeInput( string input )
 	return tokens;
 }
 
+
 int main( int argc, char** argv )
 {
 	cout << "\nTHIS IS ANAGRAM GENERATOR!\n\n";
