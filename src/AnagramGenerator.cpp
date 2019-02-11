@@ -37,7 +37,6 @@ ANAGRAM_GENERATOR::ANAGRAM_GENERATOR( string dictionaryFilename )
 		cout << "\ndictionary populated with " << _Dictionary.size() << " words\n";
 
 	} else {
-
 		cout << "failed to open dictionary file \'" << dictionaryFilename << "\'\n";
 	}
 }
@@ -46,9 +45,12 @@ ANAGRAM_GENERATOR::ANAGRAM_GENERATOR( string dictionaryFilename )
 //************************************************************************************
 ANAGRAM_GENERATOR::~ANAGRAM_GENERATOR( void )
 {
-	for ( int i = 0; i < _Dictionary.size(); ++i ) 
-	{
+	for ( int i = 0; i < _Dictionary.size(); ++i ) {
 		delete _Dictionary[i];
+	}
+
+	for ( int i = 0; i < _AddedWords.size(); ++i ) {
+		delete _AddedWords[i];
 	}
 }
 
@@ -241,6 +243,51 @@ void ANAGRAM_GENERATOR::PrintAnagrams( void ) const
 	{
 		PrintAnagram( _Anagrams[i] );
 	}
+}
+
+
+//************************************************************************************
+void ANAGRAM_GENERATOR::AddNewWord( string wordStr )
+{
+	transform( wordStr.begin(), wordStr.end(), wordStr.begin(), ::tolower ); // convert all characters to lowercase
+
+	// make sure string doesn't contain any non-alpha characters
+	for ( int i = 0; i < wordStr.length(); ++i ) {
+		if ( wordStr.at( i ) < 'a' || wordStr.at( i ) > 'z' ) {
+			cout << "ERROR: word must only contain alpha characters (a-z)\n";
+			return;
+		}
+	}
+
+	// allocate our word
+	WORD* pWord = new WORD( wordStr );
+
+	// make sure word is spellable
+	if ( !pWord->CanSpellWithLetters( _InputLetters ) ) {
+		cout << "ERROR: \'" << wordStr << "\' not spellable with input letters (";
+		for ( int i = 0; i < _InputLetters.size(); ++i ) cout << _InputLetters[i];
+		cout << ")\n";
+		delete pWord;
+		return;
+	}
+
+	// make sure word doesn't already exist in our list of spellable words
+	for ( int i = 0; i < _SpellableWords.size(); ++i ) {
+		if ( pWord->GetString() == _SpellableWords[i]->GetString() ) {
+			cout << "ERROR: \'" << wordStr << "\' already exists in list of spellable words\n";
+			delete pWord;
+			return;
+		}
+	}
+
+	// add word to necessary lists
+	_AddedWords.push_back( pWord );
+	_SpellableWords.push_back( pWord );
+	if ( pWord->CanSpellWithLetters( _AvailableLetters ) ) {
+		_AvailableWords.push_back( pWord );
+	}
+
+	cout << "Added \'" << wordStr << "\' to the list of spellable words\n";
 }
 
 

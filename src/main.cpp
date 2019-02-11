@@ -7,7 +7,7 @@
 
 using namespace std;
 
-static const string DICTIONARY_FILENAME = "words50.txt";
+static const string DICTIONARY_FILENAME = "../words/words50.txt";
 
 static const int MAX_WORD_LENGTH = 50;
 static const int MAX_INPUT_LENGTH = 100;
@@ -15,6 +15,7 @@ static const int MAX_INPUT_LENGTH = 100;
 enum COMMANDS 
 {
 	NONE,
+	ADD,
 	INCLUDE,
 	UNINCLUDE,
 	IGNORE,
@@ -26,6 +27,7 @@ enum COMMANDS
 
 static COMMANDS CommandStringToEnum( string str )
 {
+	if ( str == "add" )			return ADD;
 	if ( str == "include" )		return INCLUDE;
 	if ( str == "uninclude" )	return UNINCLUDE;
 	if ( str == "ignore" )		return IGNORE;
@@ -91,6 +93,18 @@ int main( int argc, char** argv )
 
 		switch ( command )
 		{
+		case ADD:
+			{
+				// add [word]			- add [word] to the list of spellable words (if spellable). Useful for adding words not found in dictionary (names, made up words, etc.)
+				if ( !args.empty() ) {
+					for ( int i = 0; i < args.size(); ++i ) {
+						TheGenerator.AddNewWord( args[i] );
+					}
+				} else {
+					cout << "ERROR: at least 1 arg expected for command \'" << commandStr << "\'. " << args.size() << " provided.\n";
+				}
+			} break;
+
 		case INCLUDE: 
 			{
 				// include [word]		- add [word] to list of words we want included in the generated anagrams

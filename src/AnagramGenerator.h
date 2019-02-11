@@ -26,7 +26,8 @@ public:
 class ANAGRAM_GENERATOR 
 {
 private:
-	std::vector<WORD*>						_Dictionary;
+	std::vector<WORD*>						_Dictionary;		// list of words read in from dictionary text file at startup
+	std::vector<WORD*>						_AddedWords;		// list of words added at runtime by user
 
 	std::vector<char>						_InputLetters;		// alphabetized list of letters from the input sentence	
 	std::vector<WORD*>						_SpellableWords;	// list of words that we can spell with _InputLetters
@@ -38,7 +39,8 @@ private:
 	std::vector<std::vector<WORD*>>			_Anagrams;			// list of anagram sentences. Each anagram sentence stored as a list of ptrs to words.
 
 private:
-	/** Recursive function that finds all possible anagram sentences that can be made using all letters. Once a full anagram is found, it is saved into the _Anagrams list. */
+	/** Recursive function that finds all possible anagram sentences that can be made using all letters. 
+		Once a full anagram is found, it is saved into the _Anagrams list. */
 	void FindAnagrams(	const std::vector<char>&		letters,
 						const std::vector<WORD*>& 		words,
 						std::vector<WORD*> 				sentence );
@@ -59,6 +61,8 @@ public:
 
 	void GenerateAnagrams( void );
 	
+	void AddNewWord( std::string wordStr );
+
 	void AddIncludedWord( std::string wordStr );
 	
 	void RemoveIncludedWord( std::string wordStr );
