@@ -28,4 +28,7 @@
 
 # Directories #
 ######################
-/bin/
+bin/*
+
+# Ignore Mac Specific Files
+.DS_Store
