@@ -1,10 +1,10 @@
-CC = g++
-CFLAGS = -std=c++11
-EXEC = AnagramGenerator.exe
+CXX = g++
+CXXFLAGS = -std=c++11
+EXEC = bin/AnagramGenerator
 	
 all:
 	rm -f $(EXEC)
-	$(CC) $(CFLAGS) -o $(EXEC) main.cpp AnagramGenerator.cpp
+	$(CXX) $(CXXFLAGS) -o $(EXEC) src/main.cpp src/AnagramGenerator.cpp
 
 clean:
 	$(RM) $(EXEC) *.o *~
