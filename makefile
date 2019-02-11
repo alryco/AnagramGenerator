@@ -7,4 +7,4 @@ all:
 	$(CXX) $(CXXFLAGS) -o $(EXEC) src/main.cpp src/AnagramGenerator.cpp
 
 clean:
-	$(RM) $(EXEC) *.o *~
+	$(RM) -r $(EXEC) *.o *~
